@@ -9,8 +9,8 @@
 <language id="ap9" _name="AP9" version="2.0" _section="Sources">
 
   <metadata>
-    <property name="mimetypes">text/x-c;text/x-csrc;image/x-xpixmap</property>
     <property name="globs">*.asm</property>
+    <property name="mimetypes">text/x-asm</property>
     <property name="line-comment-start">;</property>
   </metadata>
 
@@ -19,10 +19,6 @@
 
     <style id="comment"           _name="Comment"               map-to="def:comment"/>
 
-    <style id="preprocessor"      _name="Preprocessor"          map-to="def:preprocessor"/>
-    <style id="included-file"     _name="Included File"         map-to="def:string"/>
-
-    <style id="printf"            _name="printf Conversion"     map-to="def:special-char"/>
     <style id="escaped-character" _name="Escaped Character"     map-to="def:special-char"/>
 
     <style id="char"              _name="Character"             map-to="def:character"/>
@@ -36,6 +32,8 @@
     <style id="storage-class"     _name="Storage Class"         map-to="def:type"/>
   </styles>
 
+  <default-regex-options case-sensitive="false"/>
+
   <definitions>
 
     <!--regexs-->
@@ -48,56 +46,9 @@
       )
     </define-regex>
 
-    <!--contexts NOT used on the main context-->
-    <!-- TODO: what about scanf ? -->
-    <!-- man 3 printf -->
-    <context id="printf" style-ref="printf" extend-parent="false">
-      <match extended="true">
-        \%\%|\%
-        (?:[1-9][0-9]*\$)?      # argument
-        [#0\-\ \+\'I]*          # flags
-        (?:[1-9][0-9]*|\*)?     # width
-        (?:\.\-?(?:[0-9]+|\*))? # precision
-        (?:hh|ll|[hlLqjzt])?    # length modifier
-        [diouxXeEfFgGaAcsCSpnm] # conversion specifier
-      </match>
-    </context>
-
-    <context id="include" style-ref="preprocessor">
-      <match extended="true">
-        \%{preproc-start}
-        (include|import)\s*
-        (".*?"|&lt;.*&gt;)
-      </match>
-      <include>
-        <context id="included-file" sub-pattern="2" style-ref="included-file"/>
-      </include>
-    </context>
-
-    <context id="preprocessor" style-ref="preprocessor" end-at-line-end="true">
-      <start extended="true">
-        \%{preproc-start}
-        (define|undef|error|pragma|ident|if(n?def)?|else|elif|endif|line|warning)
-        \b
-      </start>
-      <include>
-        <context ref="def:line-continue" ignore-style="true"/>
-        <context ref="string" ignore-style="true"/>
-        <context ref="def:c-like-comment"/>
-        <context ref="def:c-like-comment-multiline"/>
-      </include>
-    </context>
-
     <context id="string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
       <start>L?"</start>
       <end>"</end>
-      <include>
-        <context ref="printf"/>
-        <context id="escaped-character" style-ref="escaped-character">
-          <match>\%{escaped-character}</match>
-        </context>
-        <context ref="def:line-continue"/>
-      </include>
     </context>
 
     <context id="char" style-ref="char">
@@ -214,9 +165,6 @@
     		    (?![\w\.])
 				  </match>
 				</context>
-
-        <context ref="include"/>
-        <context ref="preprocessor"/>
 
         <context ref="char"/>
         <context ref="string"/>
